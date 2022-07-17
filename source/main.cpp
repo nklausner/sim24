@@ -2,6 +2,9 @@
 and may not be redistributed without written permission.*/
 
 
+//2022-07-17: craeting github repository
+
+
 #pragma once
 #include "SDL_handler.h"
 #include "SDL_writer.h"
