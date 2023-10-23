@@ -29,6 +29,12 @@ SDL_handler::SDL_handler()
 		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 		return;
 	}
+	if (SDL_Init(SDL_INIT_EVENTS) < 0)
+	{
+		printf("SDL could not initialize events! SDL_Error: %s\n", SDL_GetError());
+		return;
+	};
+
 	data::ticks = SDL_GetTicks();
 	return;
 }
@@ -58,12 +64,18 @@ int SDL_handler::get_command()
 		{
 			switch (event.key.keysym.sym)
 			{
+			case SDLK_SPACE:	return PAUSEUNPAUSE;
 			case SDLK_UP:		return SCROLL_UP;
 			case SDLK_DOWN:		return SCROLL_DO;
 			case SDLK_LEFT:		return SCROLL_LE;
 			case SDLK_RIGHT:	return SCROLL_RI;
 			case SDLK_PAGEDOWN:	return ZOOM_IN;
 			case SDLK_PAGEUP:	return ZOOM_OUT;
+			case SDLK_PLUS:		return SPEED_UP;
+			case SDLK_KP_PLUS:	return SPEED_UP;
+			case SDLK_MINUS:	return SPEED_DOWN;
+			case SDLK_KP_MINUS:	return SPEED_DOWN;
+			case SDLK_HASH:		return ANALYZE_TILE;
 			}
 		}
 	}

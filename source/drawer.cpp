@@ -25,10 +25,14 @@ void Drawer::update_coords()
 	xr = x + w * zoom / 20;
 	yu = y - h * zoom / 20;
 	yd = y + h * zoom / 20;
-	xt0 = get_tile_number(data::xl);
-	xt1 = get_tile_number(data::xr);
-	yt0 = get_tile_number(data::yu);
-	yt1 = get_tile_number(data::yd);
+	tldxl = xl - tld;
+	tldxr = xr + tld;
+	tldyu = yu - tld;
+	tldyd = yd + tld;
+	xt0 = get_tile_index(data::xl);
+	xt1 = get_tile_index(data::xr);
+	yt0 = get_tile_index(data::yu);
+	yt1 = get_tile_index(data::yd);
 
 	active_tiles.clear();
 	for (int xt = xt0; xt <= xt1; xt++)
@@ -42,6 +46,7 @@ void Drawer::update_coords()
 		}
 	}
 	//std::cout << "updating: tiles " << active_tiles.size() << std::endl;
+	//std::cout << "updated borders " << tldxl << " " << tldxr << " " << tldyu << " " << tldyd << std::endl;
 	return;
 }
 
@@ -82,7 +87,7 @@ void Drawer::draw()
 		SDL_SetRenderDrawColor(renderer, 0xCC, 0xCC, 0xCC, 0xFF);
 		SDL_RenderClear(renderer);
 
-		//Render tile grind
+		//Render tile grid
 		SDL_SetRenderDrawColor(renderer, 0xDD, 0xDD, 0xDD, 0xFF);
 		draw_tile_grid();
 
@@ -117,6 +122,10 @@ void Drawer::draw_rails()
 			for (unsigned i = 1; i < t->rails[j].size(); i++)
 			{
 				draw_line(t->rails[j][i - 1], t->rails[j][i]);
+				if (t->rails[j][i].findex < 4294967295)
+				{
+					draw_square(t->rails[j][i]);
+				}
 				data::drawn_rails++;
 			}
 		}
@@ -167,10 +176,10 @@ void Drawer::draw_labels()
 void Drawer::draw_tile_grid()
 {
 	//loop over all tiles to draw
-	int xt0 = get_tile_number(data::xl);
-	int xt1 = get_tile_number(data::xr);
-	int yt0 = get_tile_number(data::yu);
-	int yt1 = get_tile_number(data::yd);
+	int xt0 = get_tile_index(data::xl);
+	int xt1 = get_tile_index(data::xr);
+	int yt0 = get_tile_index(data::yu);
+	int yt1 = get_tile_index(data::yd);
 	int x = 0;
 	int y = 0;
 
@@ -188,10 +197,10 @@ void Drawer::draw_tile_grid()
 }
 
 
-int Drawer::get_tile_number(int x)
-{
-	return (x < 0) ? (x / data::s) - 1 : (x / data::s);
-}
+//int Drawer::get_tile_number(int x)
+//{
+//	return (x < 0) ? (x / data::s) - 1 : (x / data::s);
+//}
 
 
 void Drawer::draw_line(Point& p0, Point& p1)
@@ -212,5 +221,17 @@ void Drawer::draw_line(Pointf& p0, Pointf& p1)
 	int x2 = (int)((p1.x - data::xl) * 10) / data::zoom;
 	int y2 = (int)((p1.y - data::yu) * 10) / data::zoom;
 	SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+	return;
+}
+
+
+void Drawer::draw_square(Point& p)
+{
+	int x = 10 * (p.x - data::xl) / data::zoom;
+	int y = 10 * (p.y - data::yu) / data::zoom;
+	SDL_RenderDrawLine(renderer, x - 3, y - 3, x - 3, y + 3);
+	SDL_RenderDrawLine(renderer, x - 3, y + 3, x + 3, y + 3);
+	SDL_RenderDrawLine(renderer, x + 3, y + 3, x + 3, y - 3);
+	SDL_RenderDrawLine(renderer, x + 3, y - 3, x - 3, y - 3);
 	return;
 }

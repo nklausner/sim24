@@ -18,11 +18,16 @@ void InfoPanel::draw()
 	SDL_SetRenderDrawColor(renderer, 0xDD, 0xDD, 0xDD, 0xFF);
 	SDL_RenderDrawRect(renderer, &infoPanelBorder);
 
-	writer->write(std::to_string(data::speed), 4, 2);
+	if (data::is_running){
+		writer->write(std::to_string(data::speed), 4, 2);
+	}
+	else {
+		writer->write("STOP", 4, 2);
+	}
 	writer->write(writeTime(data::time / 1000), 54, 2);
 
-	writer->write(writeFloat(data::zoom), 4, 16);
-	writer->write(writeFloat(data::x / 100) + "," + writeFloat(data::y / 100), 54, 16);
+	writer->write(writeFloat(data::zoom), 4, 18);
+	writer->write(writeFloat(data::x / 100) + "," + writeFloat(data::y / 100), 54, 18);
 	return;
 }
 

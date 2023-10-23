@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <vector>
 #include <SDL.h>
 #include "SDL_writer.h"
 #include "data.h"
@@ -20,9 +22,10 @@ private:
 	void draw_platforms();
 	void draw_labels();
 	void draw_tile_grid();
-	int get_tile_number(int x);
+	//int get_tile_number(int x);
 	void draw_line(Point& p0, Point& p1);
 	void draw_line(Pointf& p0, Pointf& p1);
+	void draw_square(Point& p);
 
 	SDL_Renderer* renderer = NULL;
 	SDL_Writer* mywriter = NULL;

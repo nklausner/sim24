@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "function.h"
 
 
 //2022-06-17: initialize tile
@@ -11,10 +12,10 @@
 class Point
 {
 public:
-	Point(int x, int y, int function);
+	Point(int x_, int y_, size_t i_);
 	int x = 0;
 	int y = 0;
-	int function = 0;
+	size_t findex = 4294967295; //index of tile->functions
 };
 
 
@@ -42,10 +43,12 @@ class Tile
 public:
 	Tile(int xtn, int ytn);
 	void add_initial_rail(int xn, int yn);
+	void add_to_last_or_new_rail(int xn, int yn);
 
 	int xt = 0;
 	int yt = 0;
 	std::vector<std::vector<Point>> rails = {};
 	std::vector<std::vector<Pointf>> platforms = {};
 	std::vector<Label> labels = {};
+	std::vector<Function> functions = {};
 };

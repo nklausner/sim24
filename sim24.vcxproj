@@ -129,6 +129,9 @@
   <ItemGroup>
     <ClCompile Include="source\data.cpp" />
     <ClCompile Include="source\drawer.cpp" />
+    <ClCompile Include="source\fileHandler.cpp" />
+    <ClCompile Include="source\function.cpp" />
+    <ClCompile Include="source\functionLoader.cpp" />
     <ClCompile Include="source\geometry.cpp" />
     <ClCompile Include="source\infoPanel.cpp" />
     <ClCompile Include="source\loader.cpp" />
@@ -136,19 +139,28 @@
     <ClCompile Include="source\SDL_handler.cpp" />
     <ClCompile Include="source\SDL_writer.cpp" />
     <ClCompile Include="source\tile.cpp" />
+    <ClCompile Include="source\tileAnalyzer.cpp" />
+    <ClCompile Include="source\timetable.cpp" />
     <ClCompile Include="source\train.cpp" />
+    <ClCompile Include="source\trainLoader.cpp" />
     <ClCompile Include="source\trainManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\data.h" />
     <ClInclude Include="source\drawer.h" />
+    <ClInclude Include="source\fileHandler.h" />
+    <ClInclude Include="source\function.h" />
+    <ClInclude Include="source\functionLoader.h" />
     <ClInclude Include="source\geometry.h" />
     <ClInclude Include="source\infoPanel.h" />
     <ClInclude Include="source\loader.h" />
     <ClInclude Include="source\SDL_handler.h" />
     <ClInclude Include="source\SDL_writer.h" />
     <ClInclude Include="source\tile.h" />
+    <ClInclude Include="source\tileAnalyzer.h" />
+    <ClInclude Include="source\timetable.h" />
     <ClInclude Include="source\train.h" />
+    <ClInclude Include="source\trainLoader.h" />
     <ClInclude Include="source\trainManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

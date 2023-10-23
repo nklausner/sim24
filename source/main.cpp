@@ -14,12 +14,15 @@ and may not be redistributed without written permission.*/
 #include "data.h"
 #include "geometry.h"
 #include "trainManager.h"
+#include "functionLoader.h"
 #include "infoPanel.h"
+#include "tileAnalyzer.h"
 #include <windows.h>
 
 
 int main(int argc, char* args[])
 {
+
 	//fix console window position
 	HWND consoleWindow = GetConsoleWindow();
 	SetWindowPos(consoleWindow, 0, 0, 60, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
@@ -27,29 +30,53 @@ int main(int argc, char* args[])
 	//instanciate objects
 	SDL_handler sdlh;
 	SDL_Writer sdlw(sdlh.renderer);
-	Loader loader;
 	Drawer drawer(sdlh.renderer, &sdlw);
 	InfoPanel infoPanel(sdlh.renderer, &sdlw);
-	create_full_circle(data::xrel, data::yrel);
+	create_full_circle();
 
 	//prepare stuff
-	loader.load_all();
+	Loader loader;
+	FunctionLoader functionLoader;
 	drawer.update_coords();
+
+	//instanicate additional tools
+	TileAnalyzer tileAnalyzer;
 
 	//initiate trains, depends on rails
 	TrainManager trainmanager(sdlh.renderer, &sdlw);
+	std::cout << "[INFO] loading complete" << std::endl;
 
 	//run main loop handling user requests
 	while (data::command)
 	{
-		data::time += data::tpf * data::speed;
 		data::command = sdlh.get_command();
-		if (data::command >= 2 && data::command < 8) {
+		if (data::command >= 2 && data::command < 8)
+		{
 			drawer.update_coords();
 		}
-		trainmanager.update();
+		else if (data::command == PAUSEUNPAUSE)
+		{
+			data::is_running = !data::is_running;
+		}
+		else if (data::command == SPEED_UP && data::speed < 10)
+		{
+			data::speed++;
+		}
+		else if (data::command == SPEED_DOWN && data::speed > 1)
+		{
+			data::speed--;
+		}
+		else if (data::command == ANALYZE_TILE)
+		{
+			tileAnalyzer.print_current_tile();
+		}
+		if (data::is_running)
+		{
+			data::time += data::tpf * data::speed;
+			trainmanager.update();
+		}
 		drawer.draw();
-		trainmanager.draw_all();
+		trainmanager.draw_all_trains();
 		infoPanel.draw();
 
 		SDL_RenderPresent(sdlh.renderer);

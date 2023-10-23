@@ -14,7 +14,7 @@ public:
 	SDL_Writer(SDL_Renderer* r);
 	void write(std::string s, int x, int y);
 	void write_center(std::string s, int x, int y);
-	const int fontsize = 14;
+	const int fontsize = 16;
 	const int fontwide = 8;
 
 private:

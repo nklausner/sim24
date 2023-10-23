@@ -5,57 +5,112 @@ TrainManager::TrainManager(SDL_Renderer* renderer_, SDL_Writer* mywriter_)
 {
 	renderer = renderer_;
 	mywriter = mywriter_;
-	all_trains.clear();
-	Train train1(7530.0, -4827.0, 7596, -4860, 7464, -4794);
-	all_trains.push_back(train1);
+	fill_series_length();
+
+	//loading all xml files from given directory
+	//reads content in string-vector
+	std::string my_dirname = data::my_directory + "save";
+	//for (const auto & entry : std::experimental::filesystem::directory_iterator(my_dirname))
+	//std::string my_filename = entry.path().generic_string();
+	std::string my_filename = my_dirname + "\\S-Bahn-Stuttgart.xml";
+	std::vector<std::string> my_vec = read_file(my_filename);
+	extract_timetables(my_vec, data::timetables);
+	extract_trains(my_vec, all_trains);
+
+	//Train train1(7510.0, -4817.0, 7596, -4860, 7464, -4794); //U7 Enkheim
+	//Train train2("791", -20200.0, 23468.0, -20336, 23536, -20108, 23422); //S1 Herrenberg
+	//all_trains.push_back(train1);
+	//all_trains.push_back(train2);
 	return;
 }
 
 
 void TrainManager::update()
 {
-	for (Train& t : all_trains)
+	if (true) //data::time % 5000 == 0
 	{
-		t.update();
-		t.update_cars();
+		for (Train& t : all_trains)
+		{
+			t.update();
+			//t.update_cars();
+		}
 	}
 	return;
 }
 
 
-void TrainManager::draw_all()
+void TrainManager::draw_all_trains()
 {
 	if (renderer && mywriter)
 	{
-		if (data::zoom > 10)
+		SDL_SetRenderDrawColor(renderer, 0xFF, 0x66, 0x66, 0xFF);
+
+		if (data::zoom <= 50)
 		{
-			for (Train& t : all_trains)
-			{
-				draw_train_square(t);
-			}
+			draw_all_trains_wagons();
 		}
 		else
 		{
-			for (Train& t : all_trains)
-			{
-				draw_train_rectangle(t);
-			}
+			draw_all_trains_single();
 		}
 	}
 	return;
 }
 
 
-void TrainManager::draw_train_square(Train& t)
+void TrainManager::draw_all_trains_wagons()
 {
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0x66, 0x66, 0xFF);
-	for (int i = 0; i < t.length; i++)
+	std::vector<float> xvec = { 0.0f };
+	std::vector<float> yvec = { 0.0f };
+	std::vector<int> ovec = { 0 };
+	std::vector<float> lvec = { 0.0f };
+	//already_debug_one = false;
+	for (Train& t : all_trains)
 	{
-		int x = 10 * ((int)t.cx[i] - data::xl) / data::zoom;
-		int y = 10 * ((int)t.cy[i] - data::yu) / data::zoom;
-		draw_square(x, y);
-		//std::cout << " " << x << " " << y << std::endl;
+		if (t.is_visible())
+		{
+			t.set_train_car_coords(xvec, yvec, ovec, lvec);
+
+			if (data::zoom == 50)
+			{
+				for (unsigned i = 0; i < ovec.size(); i++)
+				{
+					draw_square(xvec[i], yvec[i]);
+				}
+			}
+			else
+			{
+				for (unsigned i = 0; i < ovec.size(); i++)
+				{
+					draw_rectangle(xvec[i], yvec[i], lvec[i] - 1.0f, 3.0f, ovec[i]);
+				}
+			}
+			//if (already_debug_one == false)
+			//{
+			//	already_debug_one = true;
+			//	std::cout << lvec[0] << std::endl;
+			//}
+		}
 	}
+	return;
+}
+
+
+void TrainManager::draw_all_trains_single()
+{
+	for (Train& t : all_trains)
+	{
+		if (t.is_visible())
+		{
+			draw_square((float)t.x, (float)t.y);
+		}
+	}
+	return;
+}
+
+
+void TrainManager::draw_all_trains_line()
+{
 	return;
 }
 
@@ -65,40 +120,51 @@ void TrainManager::draw_train_rectangle(Train& t)
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0x66, 0x66, 0xFF);
 	for (int i = 0; i < t.length; i++)
 	{
-		float x = 10.0f * (t.cx[i] - data::xl) / data::zoom;
-		float y = 10.0f * (t.cy[i] - data::yu) / data::zoom;
-		float lh = 5.0f * (t.larr[i] - 1.0f) / data::zoom;
-		float wh = 15.0f / data::zoom;
-		int o = t.qarr[i];
-		draw_rectangle(x, y, lh, wh, o);
+		//float x = 10.0f * (t.cx[i] - data::xl) / data::zoom;
+		//float y = 10.0f * (t.cy[i] - data::yu) / data::zoom;
+		//float lh = 5.0f * (t.larr[i] - 1.0f) / data::zoom;
+		//float wh = 15.0f / data::zoom;
+		//int o = t.qarr[i];
+		//draw_rectangle(x, y, lh, wh, o);
 		//std::cout << " " << x << " " << y << std::endl;
 	}
 	return;
 }
 
 
-void TrainManager::draw_square(int x, int y)
+void TrainManager::draw_square(float xd, float yd)
 {
-	SDL_RenderDrawLine(renderer, x - 2, y - 2, x - 2, y + 2);
-	SDL_RenderDrawLine(renderer, x - 2, y + 2, x + 2, y + 2);
-	SDL_RenderDrawLine(renderer, x + 2, y + 2, x + 2, y - 2);
-	SDL_RenderDrawLine(renderer, x + 2, y - 2, x - 2, y - 2);
+	//draws fixed square around given map positions
+	//translates to screen position
+	int x = ((int)(10 * xd) - (10 * data::xl)) / data::zoom;
+	int y = ((int)(10 * yd) - (10 * data::yu)) / data::zoom;
+	SDL_RenderDrawLine(renderer, x - 1, y - 1, x - 1, y + 1);
+	SDL_RenderDrawLine(renderer, x - 1, y + 1, x + 1, y + 1);
+	SDL_RenderDrawLine(renderer, x + 1, y + 1, x + 1, y - 1);
+	SDL_RenderDrawLine(renderer, x + 1, y - 1, x - 1, y - 1);
 	return;
 }
 
 
 void TrainManager::draw_rectangle(float x, float y, float lh, float wh, int o)
 {
-	int xo = data::xrel[o];
-	int yo = data::yrel[o];
-	int ax = (int)(x + (lh * xo + wh * yo) / 1000);
-	int ay = (int)(y + (lh * yo - wh * xo) / 1000);
-	int bx = (int)(x + (lh * xo - wh * yo) / 1000);
-	int by = (int)(y + (lh * yo + wh * xo) / 1000);
-	int cx = (int)(x - (lh * xo + wh * yo) / 1000);
-	int cy = (int)(y - (lh * yo - wh * xo) / 1000);
-	int dx = (int)(x - (lh * xo - wh * yo) / 1000);
-	int dy = (int)(y - (lh * yo + wh * xo) / 1000);
+	//draws zoom adjusted rectangle at given map positions
+	//translates to screen position
+	//length and height are halved for easier calculation from center
+	x = (10 * x - 10 * data::xl) / data::zoom;
+	y = (10 * y - 10 * data::yu) / data::zoom;
+	lh = (5 * lh) / data::zoom;
+	wh = (5 * wh) / data::zoom;
+	float xo = (float)geom::xrel[o];
+	float yo = (float)geom::yrel[o];
+	int ax = (int)(x + (lh * xo + wh * yo));
+	int ay = (int)(y + (lh * yo - wh * xo));
+	int bx = (int)(x + (lh * xo - wh * yo));
+	int by = (int)(y + (lh * yo + wh * xo));
+	int cx = (int)(x - (lh * xo + wh * yo));
+	int cy = (int)(y - (lh * yo - wh * xo));
+	int dx = (int)(x - (lh * xo - wh * yo));
+	int dy = (int)(y - (lh * yo + wh * xo));
 	SDL_RenderDrawLine(renderer, ax, ay, bx, by);
 	SDL_RenderDrawLine(renderer, cx, cy, dx, dy);
 	SDL_RenderDrawLine(renderer, bx, by, cx, cy);
