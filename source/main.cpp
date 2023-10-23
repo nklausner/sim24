@@ -3,7 +3,8 @@ and may not be redistributed without written permission.*/
 
 
 //2022-07-17: craeting github repository
-//2023-10-23: trying to push to github with github account 
+//2023-10-23: trying to push to github with github account
+//2023: added functions like switches, stops, timetables, speed change
 
 
 #pragma once
